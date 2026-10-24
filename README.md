@@ -103,6 +103,8 @@ The actual recorded model run passed **18 tests**. The Python/pytest assignment 
 
 Import **abarintuma/ui-ux** as a new Vercel project. Use the **Other** framework preset and keep the repository root as the Root Directory. This is a static site: there is no package installation or build step. The included `vercel.json` sets **dist** as the Output Directory. Select Deploy in Vercel when ready. Hash routes such as `#/transactions` work without server rewrites. No environment variables are required.
 
+Reference: [Vercel static configuration](https://vercel.com/docs/project-configuration/vercel-json) and [static builds](https://vercel.com/docs/builds).
+
 The native Figma prototype is designed for **mobile phones**. The web implementation adapts to both mobile and desktop screens. The sample user is named **Aine**.
 
 ## Demo in two minutes
