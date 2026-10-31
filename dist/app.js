@@ -1,20 +1,35 @@
 /* Budgetwise UI: small render functions, hash navigation, and local persistence. */
 'use strict';
 const M = window.BudgetModel;
-const STORE = 'budgetwise-v1';
+let STORE = 'budgetwise-v1';
 const SESSION = 'budgetwise-login-session-v2';
+const ACCOUNTS = 'budgetwise-accounts-v1';
 
 // This client-side verifier supports the coursework sign-in flow.
 // Production authentication requires a server-side session boundary.
 const LOGIN_SALT = '4dda11ab625f920a6a308d5818fbe694';
 const LOGIN_VERIFIER = '34c18c691d38f0e2862b2ad385c57e06cf83543c685cb167fb2da0da4305de80';
-async function matchesLogin(email, password) {
+const PRIMARY_EMAIL_HASH = '416804e6d9345be11c07566c89e745bd380bdb28be3dce747d1d9684ee2931df';
+async function passwordVerifier(email, password, saltHex) {
   const encoder = new TextEncoder();
   const material = await crypto.subtle.importKey('raw', encoder.encode(email.trim().toLowerCase() + '\0' + password), 'PBKDF2', false, ['deriveBits']);
-  const salt = Uint8Array.from(LOGIN_SALT.match(/../g), part => parseInt(part, 16));
+  const salt = Uint8Array.from(saltHex.match(/../g), part => parseInt(part, 16));
   const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt, iterations:210000, hash:'SHA-256'}, material, 256);
-  const candidate = Array.from(new Uint8Array(bits), byte => byte.toString(16).padStart(2, '0')).join('');
-  return candidate === LOGIN_VERIFIER;
+  return Array.from(new Uint8Array(bits), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+async function matchesLogin(email, password, salt = LOGIN_SALT, verifier = LOGIN_VERIFIER) {
+  return await passwordVerifier(email, password, salt) === verifier;
+}
+async function emailHash(email) {
+  const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(email.trim().toLowerCase()));
+  return Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+function readAccounts() {
+  const accounts = JSON.parse(localStorage.getItem(ACCOUNTS) || '[]');
+  if (!Array.isArray(accounts) || accounts.some(a => !a || !/^[a-f0-9]{32}$/.test(a.id) || !/^[a-f0-9]{32}$/.test(a.salt) || !/^[a-f0-9]{64}$/.test(a.emailHash) || !/^[a-f0-9]{64}$/.test(a.verifier) || typeof a.name !== 'string' || !a.name.trim() || a.name.length > 40)) {
+    throw new Error('Saved account details could not be read.');
+  }
+  return accounts;
 }
 
 const app = document.querySelector('#app');
@@ -68,13 +83,44 @@ const pretty = value => value[0].toUpperCase() + value.slice(1);
 const categoryIcon = category => ({Housing:'home','Food & groceries':'food',Transport:'transport',Utilities:'bolt',Education:'book',Health:'health',Leisure:'leisure'}[category] || 'wallet');
 const colors = ['#32634a','#7d9a62','#b8c98e','#dbb371','#b7866a','#91b4a3','#bbc5b0','#d4d8c9'];
 let storageWarning = '';
-let state = loadState();
+let activeAccount = 'primary';
 let signedIn = false;
-try { signedIn = sessionStorage.getItem(SESSION) === 'yes'; } catch { /* A session can still run in memory. */ }
+try {
+  const session = JSON.parse(sessionStorage.getItem(SESSION) || 'null');
+  if (session === 'primary' || readAccounts().some(a => a.id === session)) {
+    activeAccount = session;
+    signedIn = true;
+    STORE = session === 'primary' ? 'budgetwise-v1' : 'budgetwise-account-' + session;
+  }
+} catch { /* A session can still run in memory. */ }
+let state = loadState();
 let month = '2026-10';
 let filters = {type:'all',category:'all',search:'',sort:'newest'};
 let lastSaved = null;
 let undoAction = null;
+
+function accountSeed(withSamples = false) {
+  const seed = M.seed();
+  if (activeAccount !== 'primary') {
+    const account = readAccounts().find(a => a.id === activeAccount);
+    seed.profile = {name:account?.name || 'Your account', email:'', savingsGoal:0};
+    if (!withSamples) { seed.transactions = []; seed.budgets = {}; }
+  }
+  return seed;
+}
+function enterAccount(id) {
+  activeAccount = id;
+  STORE = id === 'primary' ? 'budgetwise-v1' : 'budgetwise-account-' + id;
+  storageWarning = '';
+  state = loadState();
+  lastSaved = null;
+  undoAction = null;
+  toastBox.hidden = true;
+  filters = {type:'all',category:'all',search:'',sort:'newest'};
+  month = '2026-10';
+  setSession(true);
+  navigate('dashboard');
+}
 
 function loadState() {
   try {
@@ -91,7 +137,7 @@ function loadState() {
       storageWarning = 'Saved demo data could not be read. Sample data is shown; your existing stored data has not been overwritten.';
     }
   } catch { storageWarning = 'Browser storage is unavailable. You can explore sample data, but changes cannot be saved.'; }
-  return M.seed();
+  return accountSeed();
 }
 function persist(next) {
   try {
@@ -121,7 +167,7 @@ function showToast(message, undo = null, isError = false) {
 }
 function setSession(value) {
   signedIn = value;
-  try { if (value) sessionStorage.setItem(SESSION,'yes'); else sessionStorage.removeItem(SESSION); } catch { /* Session remains in memory. */ }
+  try { if (value) sessionStorage.setItem(SESSION,JSON.stringify(activeAccount)); else sessionStorage.removeItem(SESSION); } catch { /* Session remains in memory. */ }
 }
 function navigate(route) {
   if (location.hash === '#/' + route) render();
@@ -142,7 +188,20 @@ function login() {
       <form id="login-form" novalidate><div class="field"><label for="login-email">Email address</label><input id="login-email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required aria-describedby="login-error"></div>
       <div class="field"><label for="login-password">Password</label><div class="password-wrap"><input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required aria-describedby="login-error"><button type="button" class="icon-btn" data-action="toggle-password" aria-label="Show password">${icon('eye')}</button></div></div>
       <p id="login-error" class="error" role="alert"></p><button class="btn full" type="submit">Sign in ${icon('arrow')}</button></form>
+      <p class="login-bottom">New to Budgetwise? <a href="#/register">Create account</a></p>
     </div></section></main>`;
+}
+function registration() {
+  login();
+  document.title = 'Create account · Budgetwise';
+  document.querySelector('.login-form').innerHTML = `<span class="eyebrow">Your budget starts here</span><h1>Create your account.</h1><p class="subtitle">A simple place for your income and spending.</p>
+    <form id="register-form" novalidate>
+      <div class="field"><label for="register-name">Full name</label><input id="register-name" name="name" autocomplete="name" maxlength="40" required aria-describedby="register-name-error"><span id="register-name-error" class="error"></span></div>
+      <div class="field"><label for="register-email">Email address</label><input id="register-email" name="email" type="email" autocomplete="username" maxlength="254" required aria-describedby="register-email-error"><span id="register-email-error" class="error"></span></div>
+      <div class="field"><label for="register-password">Password</label><div class="password-wrap"><input id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required aria-describedby="register-password-help register-password-error"><button type="button" class="icon-btn" data-action="toggle-register-password" aria-label="Show password">${icon('eye')}</button></div><small id="register-password-help">Use at least 8 characters.</small><span id="register-password-error" class="error"></span></div>
+      <div class="field"><label for="register-confirm">Confirm password</label><input id="register-confirm" name="confirm" type="password" autocomplete="new-password" required aria-describedby="register-confirm-error"><span id="register-confirm-error" class="error"></span></div>
+      <p id="register-error" class="error" role="alert"></p><button class="btn full" type="submit">Create account ${icon('arrow')}</button>
+    </form><p class="login-bottom">Already have an account? <a href="#/login">Sign in</a></p>`;
 }
 function shell(route) {
   const names = {dashboard:'Overview',transactions:'Transactions',budgets:'Budgets',reports:'Reports',settings:'Settings',add:'Add transaction',summary:'Updated summary',edit:'Edit transaction'};
@@ -231,7 +290,7 @@ function settings() {
 }
 function render() {
   if (dialog.open) dialog.close();
-  if (!signedIn) { login(); return; }
+  if (!signedIn) { currentRoute() === 'register' ? registration() : login(); return; }
   const route=currentRoute(), base=route.split('/')[0];
   shell(base);
   const views={dashboard,transactions,budgets,reports,settings,add:()=>transactionForm(),summary};
@@ -263,22 +322,66 @@ function exportCsv(data,filename) {
 }
 document.addEventListener('submit',async event=>{
   const form=event.target;
-  if (!['login-form','transaction-form','budget-form','settings-form'].includes(form.id)) return;
+  if (!['login-form','register-form','transaction-form','budget-form','settings-form'].includes(form.id)) return;
   event.preventDefault();
+  if (form.id === 'register-form') {
+    const name = form.elements.name.value.trim();
+    const email = form.elements.email.value.trim().toLowerCase();
+    const password = form.elements.password.value;
+    const errors = {};
+    if (!name || name.length > 40) errors.name = 'Enter your full name, up to 40 characters.';
+    if (!email || email.length > 254 || !form.elements.email.validity.valid) errors.email = 'Enter a valid email address.';
+    if (password.length < 8 || password.length > 128) errors.password = 'Use a password between 8 and 128 characters.';
+    if (!form.elements.confirm.value || form.elements.confirm.value !== password) errors.confirm = 'Passwords must match.';
+    for (const field of ['name','email','password','confirm']) {
+      form.elements[field].setAttribute('aria-invalid', errors[field] ? 'true' : 'false');
+      document.querySelector('#register-' + field + '-error').textContent = errors[field] || '';
+    }
+    const errorBox = document.querySelector('#register-error');
+    errorBox.textContent = '';
+    if (Object.keys(errors).length) { errorBox.textContent = 'Please check the highlighted fields.'; form.querySelector('[aria-invalid="true"]').focus(); return; }
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    try {
+      const hash = await emailHash(email);
+      let accounts = readAccounts();
+      if (hash === PRIMARY_EMAIL_HASH || accounts.some(a => a.emailHash === hash)) { errorBox.textContent = 'An account with this email already exists. Please sign in.'; return; }
+      if (accounts.length >= 50) { errorBox.textContent = 'This browser has reached its account limit.'; return; }
+      const randomHex = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), byte => byte.toString(16).padStart(2,'0')).join('');
+      let id; do { id = randomHex(); } while (accounts.some(a => a.id === id));
+      const salt = randomHex();
+      const verifier = await passwordVerifier(email,password,salt);
+      accounts = readAccounts();
+      if (accounts.some(a => a.emailHash === hash)) { errorBox.textContent = 'An account with this email already exists. Please sign in.'; return; }
+      localStorage.setItem(ACCOUNTS,JSON.stringify([...accounts,{id,name,emailHash:hash,salt,verifier}]));
+      enterAccount(id);
+      showToast('Your account is ready. Start by adding your first transaction.');
+    } catch { errorBox.textContent = 'Your account could not be saved. Allow browser storage and try again using HTTPS or localhost.'; }
+    finally { button.disabled = false; }
+    return;
+  }
   if (form.id==='login-form') {
     const email=form.email.value.trim(), password=form.password.value;
     let message='';
+    let accountId = 'primary';
     if (!email || !password) message='Enter both your email address and password.';
     else if (!form.email.validity.valid) message='Enter a valid email address.';
     else {
       const button=form.querySelector('button[type="submit"]');
       button.disabled=true;
-      try { if (!await matchesLogin(email,password)) message='Email or password is incorrect.'; }
+      try {
+        if (!await matchesLogin(email,password)) {
+          const hash = await emailHash(email);
+          const account = readAccounts().find(a => a.emailHash === hash);
+          if (account && await matchesLogin(email,password,account.salt,account.verifier)) accountId = account.id;
+          else message = 'Email or password is incorrect.';
+        }
+      }
       catch { message='Sign-in is unavailable. Open the application using HTTPS or localhost.'; }
       finally { button.disabled=false; }
     }
     if(message){document.querySelector('#login-error').textContent=message;form.email.setAttribute('aria-invalid','true');form.password.setAttribute('aria-invalid','true');return;}
-    setSession(true);navigate('dashboard');return;
+    enterAccount(accountId);return;
   }
   if (form.id==='transaction-form') {
     const t=formValues(form), errors=M.validateTransaction(t);
@@ -319,6 +422,7 @@ document.addEventListener('click',event=>{
   const action=control.dataset.action;
   if(action==='logout'){setSession(false);toastBox.hidden=true;location.hash='#/login';render();}
   if(action==='toggle-password'){const input=document.querySelector('#login-password');input.type=input.type==='password'?'text':'password';control.setAttribute('aria-label',input.type==='password'?'Show password':'Hide password');}
+  if(action==='toggle-register-password'){const input=document.querySelector('#register-password');input.type=input.type==='password'?'text':'password';control.setAttribute('aria-label',input.type==='password'?'Show password':'Hide password');}
   if(action==='close-dialog')dialog.close();
   if(action==='open-menu' || action==='close-menu'){
     const open=action==='open-menu';document.querySelector('.sidebar').classList.toggle('open',open);document.querySelector('.mobile-overlay').classList.toggle('visible',open);document.querySelector('[data-action="open-menu"]').setAttribute('aria-expanded',String(open));
@@ -337,7 +441,7 @@ document.addEventListener('click',event=>{
   }
   if(action==='reset')openDialog(`<div class="between"><h2 id="dialog-title">Start fresh with sample data?</h2><button class="icon-btn" data-action="close-dialog" aria-label="Close dialog">${icon('close')}</button></div><p>This restores the original fictional transactions, budgets, display name, and goal. You can undo using the notification.</p><div class="form-actions"><button class="btn secondary" data-action="close-dialog">Keep my workspace</button><button class="btn" data-action="confirm-reset">Restore samples</button></div>`);
   if(action==='confirm-reset'){
-    const before=cloneState();if(persist(M.seed())){lastSaved=null;month='2026-10';dialog.close();render();showToast('Original sample workspace restored.',()=>{if(persist(before)){render();showToast('Your previous workspace is restored.');}});}
+    const before=cloneState();if(persist(accountSeed(true))){lastSaved=null;month='2026-10';dialog.close();render();showToast('Original sample workspace restored.',()=>{if(persist(before)){render();showToast('Your previous workspace is restored.');}});}
   }
   if(action==='export')exportCsv(M.searchTransactions(state.transactions,{month,...filters}),'budgetwise-filtered-'+month);
   if(action==='export-report')exportCsv(M.searchTransactions(state.transactions,{month}),'budgetwise-'+month);

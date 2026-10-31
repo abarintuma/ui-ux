@@ -19,7 +19,7 @@ Open `dist/index.html` in a browser, or serve the application locally:
 python -m http.server 8000 --directory dist
 ```
 
-Open `http://localhost:8000` and sign in with the configured account. Login details are not displayed in the interface or documentation.
+Open `http://localhost:8000` and sign in with the configured account, or choose **Create account**. Enter your name, email and a password of at least eight characters. New accounts start with an empty budget and keep their records separately in the same browser. Login details are not displayed in the interface or documentation.
 
 ## Coursework materials
 
