@@ -25,3 +25,9 @@ The user selects income or expense and enters the description, amount, date and 
 ![Mobile updated summary](04-updated-summary.png)
 
 After a 15,000 UGX transport expense is saved, total expenses become 997,000 UGX and the balance becomes 853,000 UGX.
+
+## High fidelity Figma designs
+
+![Mobile Figma screen overview](figma-designs.png)
+
+The Figma overview shows the eight mobile designs: Login, Overview, Add transaction, Updated summary, Reports, Transactions, Budgets and Settings.

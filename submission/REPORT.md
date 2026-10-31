@@ -33,6 +33,10 @@ The [Figma designs](https://www.figma.com/design/FQLOMqCsZITyL52DR6MInm) show th
 
 Dark green is used for the main actions and brand. A light background separates the cards from the page. DM Sans is used for body text and numbers, while Lora is used for main headings. Repeated colours, fields and buttons keep the screens consistent.
 
+![High fidelity mobile screens in Figma](screenshots/figma-designs.png)
+
+The overview shows Login, Overview, Add transaction, Updated summary, Reports, Transactions, Budgets and Settings.
+
 ## Implementation
 
 HTML loads the interface, CSS controls the appearance and responsive layout, and JavaScript handles navigation, form validation, calculations and browser storage.

@@ -30,6 +30,7 @@ Open `http://localhost:8000` and sign in with the configured account, or choose 
 - [Hand-drawn wireframes](submission/sketches/wireframes.jpeg)
 - [Mobile screenshots](submission/screenshots/README.md)
 - [Figma designs](https://www.figma.com/design/FQLOMqCsZITyL52DR6MInm)
+- [Figma screen overview](submission/screenshots/figma-designs.png)
 
 ## Project files
 
