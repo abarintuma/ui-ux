@@ -1,7 +1,7 @@
 # Personal Budget Management System Report
 
 **Project:** Budgetwise  
-**Student:** Aaine Barintuma  
+**Student:** Ainemukama Alfred  
 **Course unit:** UI/UX Design  
 **Date:** 31 October 2026
 
@@ -60,6 +60,6 @@ The main journey works with sample data. Login is simulated and records stay in 
 ## Project links
 
 - [Website](https://ui-ux-ivory.vercel.app/)
-- [Source repository](https://github.com/abarintuma/ui-ux)
+- [Source repository](https://github.com/ainemukama-alfred/ui-ux)
 - [Mobile Figma designs](https://www.figma.com/design/FQLOMqCsZITyL52DR6MInm)
 - [Printable report](Budgetwise_Report.pdf) and [editable report](Budgetwise_Report.docx)

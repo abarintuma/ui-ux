@@ -17,8 +17,8 @@ server here; the UI/UX assignment itself runs in the browser.
 
 Choose **Explore the demo**. Alternatively, use:
 
-- Email: `demo@budgetwise.test`
-- Password: `Budgetwise123!`
+- Email: `ainemukama@gmail.com`
+- Password: `aine2026`
 
 These are public sample credentials for a simulated sign-in. There is no
 server authentication or bank connection. Transactions are fictional and
@@ -92,36 +92,3 @@ Income or expense supplies the direction. The remaining balance is
 Savings rate is `balance / income * 100`; no income means the rate is
 undefined and the UI displays a dash. The demo supports 5,000 records.
 
-## Run automated checks
-
-Use Node.js 20 or later. No npm installation is needed:
-
-```sh
-node --test tests/model.test.js
-node --check dist/model.js
-node --check dist/app.js
-```
-
-The actual recorded model run passed **18 tests**. The Python/pytest assignment in `abarintuma/software-testing` remains a separate exercise. It is not a backend for this prototype.
-
-## Deploy on Vercel
-
-Import **abarintuma/ui-ux** as a new Vercel project. Use the **Other** framework preset and keep the repository root as the Root Directory. This is a static site: there is no package installation or build step. The included `vercel.json` sets **dist** as the Output Directory. Select Deploy in Vercel when ready. Hash routes such as `#/transactions` work without server rewrites. No environment variables are required.
-
-Reference: [Vercel static configuration](https://vercel.com/docs/project-configuration/vercel-json) and [static builds](https://vercel.com/docs/builds).
-
-The native Figma prototype is designed for **mobile phones**. The web implementation adapts to both mobile and desktop screens. The sample user is named **Aine**.
-
-## Demo in two minutes
-
-Open the demo, inspect October 2026, then add a **15,000 UGX transport
-expense**. Starting sample totals are income **1,850,000**, expenses
-**982,000**, and balance **868,000**. After saving, expenses become
-**997,000** and balance **853,000**. Find the new record in Transactions and
-edit it to **12,000**; the balance becomes **856,000**. Explain the validation,
-local persistence, and why a deficit is a valid outcome. See the longer
-presentation guide for the remaining demonstration.
-
-The starting month is October 2026 to keep coursework screenshots reproducible.
-Use the month picker for another month. New months begin empty, with no category
-limits until you set them. Dates from 2000 through 2100 are supported.
