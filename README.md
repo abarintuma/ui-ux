@@ -1,6 +1,6 @@
 # Budgetwise — Personal Budget Management System
 
-A responsive UI/UX coursework prototype by Aine Barintuma. Built with
+A responsive UI/UX coursework prototype by Aaine Barintuma. Built with
 plain **HTML, CSS, and JavaScript** so the screens and calculations are easy
 to understand and demonstrate.
 
@@ -45,6 +45,11 @@ visible focus, input labels, text statuses, and a chart data table support
 accessibility. This is not a claim of a full accessibility audit.
 
 ## Assignment materials
+
+Start with the [simple illustrated PDF report](submission/Budgetwise_Report.pdf) or
+[editable Word report](submission/Budgetwise_Report.docx). The [document index](submission/README.md)
+and [assignment checklist](submission/CHECKLIST.md) show where each task is covered.
+
 
 - [Brief report](submission/REPORT.md)
 - [Research, intended users, and interview template](submission/RESEARCH.md)
