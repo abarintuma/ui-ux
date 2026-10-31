@@ -7,59 +7,70 @@
 
 ## Introduction
 
-Budgetwise helps users record income and expenses and see the remaining monthly balance. It follows Login → Budget dashboard → Add transaction → Updated summary. The website uses HTML, CSS, JavaScript and fictional sample data.
+Budgetwise helps users record income and expenses and see the amount remaining each month. The main journey is Login → Budget dashboard → Add transaction → Updated summary. The interface is built with HTML, CSS and JavaScript.
 
 ## User research
 
-Basic desk research reviewed the assignment, existing code, Figma screen structure and deployed website. Proposed users are students, salaried workers and people with irregular income. They need quick entries, clear amounts and visible monthly totals. These groups and likely difficulties are assumptions to check with users. No interviews or survey results were supplied. [Research details and questions](RESEARCH.md).
+The research focused on the tasks involved in managing a personal budget. These include recording money received, adding everyday expenses and checking the remaining balance. The intended users are students, salaried workers and people with irregular income.
+
+The task analysis identified a need for quick entry, clear UGX amounts, monthly totals and feedback after saving. These needs are addressed through summary cards, labelled fields, an income/expense switch and an updated summary. [User research](RESEARCH.md).
 
 ## Problem and requirements
 
-Users need one simple place to record money and see what remains. Main requirements are a login interface, monthly dashboard, income/expense form, validation, updated summary, easy navigation and a layout that works on phones and computers. [Full requirements](REQUIREMENTS.md).
+When money records are scattered, it is difficult to see how much remains. Budgetwise keeps entries together and calculates totals automatically. The main requirements are sign-in, a monthly dashboard, a transaction form, validation, an updated summary and easy navigation. [Requirements](REQUIREMENTS.md).
 
-## Ideas and sketches
+## Design ideas and sketches
 
-A transaction list and a dashboard were considered. The dashboard was selected because the monthly position is easier to see first. The three digital wireframes show Login, Dashboard, and Add transaction with its saved summary. They are guides for drawing the required paper sketches; they are not photographs of paper work.
+A transaction list is useful for checking individual entries, while a dashboard makes the monthly position easier to understand. The design uses a dashboard first, with a separate Transactions page for detailed records.
 
-![Digital wireframes](sketches/wireframes.png)
+The hand-drawn wireframes show the login page, dashboard, transaction form and budget page. They establish the placement of fields, summary information and main actions.
 
-## Figma design
+![Hand-drawn low fidelity wireframes](sketches/wireframes.jpeg)
 
-The existing [mobile Figma file](https://www.figma.com/design/FQLOMqCsZITyL52DR6MInm) has verified Login, Overview, Add transaction and Updated summary frames at 390 × 844 pixels. It uses consistent buttons, fields and summary cards. The website uses dark green, light green, DM Sans and Lora. [Screen links and exported design](figma/README.md). [Design explanation](DESIGN.md).
+## High fidelity design
 
-![Figma mobile login](figma/01-login.png)
+The [Figma designs](https://www.figma.com/design/FQLOMqCsZITyL52DR6MInm) show the mobile interface. The main screens are Login, Overview, Add transaction and Updated summary.
+
+Dark green is used for the main actions and brand. A light background separates the cards from the page. DM Sans is used for body text and numbers, while Lora is used for main headings. Repeated colours, fields and buttons keep the screens consistent.
 
 ## Implementation
 
-HTML loads the page, CSS controls the layout, and JavaScript handles navigation, validation, calculations and browser storage. The form records type, description, amount, date and category. Notes are optional. Balance equals monthly income minus monthly expenses.
+HTML loads the interface, CSS controls the appearance and responsive layout, and JavaScript handles navigation, form validation, calculations and browser storage.
+
+The login accepts the configured account without displaying its details. The dashboard presents income, expenses and balance for the selected month. The transaction form records the type, description, amount, date and category, with an optional note. After saving, the summary shows the new entry and updated totals.
 
 ### Login
 
-![Working login screen](screenshots/01-login.jpg)
+![Mobile login](screenshots/01-login.png)
 
 ### Budget dashboard
 
-![Working dashboard](screenshots/02-dashboard.jpg)
+![Mobile dashboard](screenshots/02-dashboard.png)
 
 ### Add transaction
 
-![Working transaction form](screenshots/03-add-transaction.jpg)
+![Mobile transaction form](screenshots/03-add-transaction.png)
 
 ### Updated summary
 
-![Saved entry and updated totals](screenshots/04-updated-summary.jpg)
+![Mobile updated summary](screenshots/04-updated-summary.png)
 
-## Checks and result
+## Testing
 
-All 18 existing model tests passed. The live desktop browser check confirmed empty-form errors, demo navigation, the balance preview, saving and persistence after reload. Starting October income is 1,850,000 UGX and expenses are 982,000 UGX, leaving 868,000 UGX. Adding a 15,000 UGX expense makes expenses 997,000 UGX and balance 853,000 UGX. [Check results](QA.md).
+The mobile interface was checked for sign-in, empty fields, incorrect login details, transaction validation and saved totals. Incorrect login details show an error. An incomplete transaction is not saved. Reloading keeps the saved entries in the same browser. The layout was checked at widths of 320 and 390 pixels.
 
-## Limitations and conclusion
+| Item | Before saving | After a 15,000 UGX expense |
+| --- | --- | --- |
+| Income | 1,850,000 UGX | 1,850,000 UGX |
+| Expenses | 982,000 UGX | 997,000 UGX |
+| Balance | 868,000 UGX | 853,000 UGX |
 
-The main journey works with sample data. Login is simulated and records stay in one browser. Participant interviews, usability feedback and student paper sketch photographs are still needed where the lecturer requires those activities. The next step is to collect that feedback and demonstrate the completed interface using the [presentation guide](PRESENTATION.md).
+## Conclusion
+
+Budgetwise provides a clear way to record income and expenses and follow a monthly budget. The hand-drawn sketches, mobile designs and working interface show the journey from sign-in to an updated summary.
 
 ## Project links
 
-- [Website](https://ui-ux-ivory.vercel.app/)
-- [Source repository](https://github.com/ainemukama-alfred/ui-ux)
-- [Mobile Figma designs](https://www.figma.com/design/FQLOMqCsZITyL52DR6MInm)
-- [Printable report](Budgetwise_Report.pdf) and [editable report](Budgetwise_Report.docx)
+- [Repository](https://github.com/ainemukama-alfred/ui-ux)
+- [Figma designs](https://www.figma.com/design/FQLOMqCsZITyL52DR6MInm)
+- [PDF report](Budgetwise_Report.pdf)

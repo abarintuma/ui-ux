@@ -1,37 +1,34 @@
-# Problem and user requirements
+# Problem and User Requirements
 
 ## Problem statement
 
-People need an easy way to record income and expenses and see the money remaining for the month. When records are scattered or totals are calculated manually, it can be difficult to understand spending. Budgetwise brings entries and totals into one simple interface. This problem framing comes from the assignment and needs participant validation.
+Keeping income and expense records in different places makes it difficult to see how much money remains. Budgetwise brings these records together and calculates monthly totals so that users can understand their spending more easily.
 
 ## Main requirements
 
-| ID | User requirement | How it is supported |
+| ID | Requirement | Interface feature |
 | --- | --- | --- |
-| R1 | Enter the application | Login screen and public demo option |
-| R2 | See the monthly financial position | Dashboard with income, expenses and balance |
-| R3 | Add an income or expense | Transaction form with type, description, amount, date and category |
-| R4 | Avoid saving incomplete entries | Required fields and clear validation messages |
-| R5 | See the result after saving | Updated summary and latest saved record |
-| R6 | Move easily between screens | Shared navigation and back/cancel links |
-| R7 | Use a phone or computer | Responsive HTML and CSS layout |
-| R8 | Keep sample records after reload | Browser local storage |
+| R1 | Sign in to the application | Email and password form |
+| R2 | View the monthly financial position | Income, expenses and balance cards |
+| R3 | Record income or an expense | Transaction form and type switch |
+| R4 | Avoid incomplete entries | Required fields and validation messages |
+| R5 | See totals after saving | Updated summary and saved entry |
+| R6 | Move between screens | Navigation menu, back and cancel actions |
+| R7 | Use the interface on a phone | Responsive layout and readable fields |
+| R8 | Keep records after reloading | Browser local storage |
 
-## Required journey
+## User journey
 
 Login → Budget dashboard → Add transaction → Updated summary.
 
-The third required interface includes the entry form and its saved summary state. The prototype gives the summary its own view to make the result clear.
+## Transaction details
 
-## Rules
+Each transaction has a type, description, amount, date and category. A note is optional. The amount must be a positive whole number from 1 to 1,000,000,000 UGX. The date must be between 2000 and 2100, and the category must match the transaction type.
 
-- All amounts use whole Uganda shillings, from 1 to 1,000,000,000 per transaction.
-- Income adds to the balance; expenses subtract from it.
-- Balance = total income − total expenses for the selected month.
-- Required fields are description, amount, date, category and transaction type.
-- Notes are optional. Dates are supported from 2000 through 2100.
-- A negative balance is allowed and shown as a deficit.
+## Calculation rules
 
-## Scope
-
-This coursework uses fictional sample data, browser storage and basic JavaScript calculations. Login is simulated. There is no bank connection, real account service or server backup.
+- Total income is the sum of income entries for the selected month.
+- Total expenses is the sum of expense entries for the selected month.
+- Remaining balance = total income − total expenses.
+- A negative balance is shown as a deficit.
+- Editing or deleting an entry updates the totals.

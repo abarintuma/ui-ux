@@ -64,7 +64,7 @@
       transactions.push({id:'history-income-'+mm,date:'2026-'+mm+'-01',type:'income',description:'Monthly income',amount:[1400000,1600000,1500000,1750000,1800000][i],category:'Salary & allowance',note:'Sample historical total'});
       transactions.push({id:'history-expense-'+mm,date:'2026-'+mm+'-24',type:'expense',description:'Monthly living expenses',amount:[1100000,1250000,1000000,1180000,1300000][i],category:'Other expenses',note:'Sample historical total'});
     });
-    return {version:1,profile:{name:'Aine',email:'demo@budgetwise.test',savingsGoal:300000},transactions,budgets:{'2026-10':{...defaultLimits}}};
+    return {version:1,profile:{name:'Ainemukama Alfred',email:'',savingsGoal:300000},transactions,budgets:{'2026-10':{...defaultLimits}}};
   }
   function validState(state) {
     if (!state || state.version !== 1 || !state.profile || typeof state.profile.name !== 'string' || !state.profile.name.trim() || state.profile.name.length > 40 || typeof state.profile.email !== 'string' || state.profile.email.length > 100 || !Number.isSafeInteger(state.profile.savingsGoal) || state.profile.savingsGoal < 0 || state.profile.savingsGoal > maxAmount || !Array.isArray(state.transactions) || state.transactions.length > 5000 || !state.budgets || typeof state.budgets !== 'object' || Array.isArray(state.budgets)) return false;

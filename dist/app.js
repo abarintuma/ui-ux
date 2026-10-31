@@ -2,7 +2,21 @@
 'use strict';
 const M = window.BudgetModel;
 const STORE = 'budgetwise-v1';
-const SESSION = 'budgetwise-demo-session';
+const SESSION = 'budgetwise-login-session-v2';
+
+// This client-side verifier supports the coursework sign-in flow.
+// Production authentication requires a server-side session boundary.
+const LOGIN_SALT = '4dda11ab625f920a6a308d5818fbe694';
+const LOGIN_VERIFIER = '34c18c691d38f0e2862b2ad385c57e06cf83543c685cb167fb2da0da4305de80';
+async function matchesLogin(email, password) {
+  const encoder = new TextEncoder();
+  const material = await crypto.subtle.importKey('raw', encoder.encode(email.trim().toLowerCase() + '\0' + password), 'PBKDF2', false, ['deriveBits']);
+  const salt = Uint8Array.from(LOGIN_SALT.match(/../g), part => parseInt(part, 16));
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt, iterations:210000, hash:'SHA-256'}, material, 256);
+  const candidate = Array.from(new Uint8Array(bits), byte => byte.toString(16).padStart(2, '0')).join('');
+  return candidate === LOGIN_VERIFIER;
+}
+
 const app = document.querySelector('#app');
 const dialog = document.querySelector('#dialog');
 const toastBox = document.querySelector('#toast');
@@ -67,7 +81,13 @@ function loadState() {
     const raw = localStorage.getItem(STORE);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (M.validState(parsed)) return parsed;
+      if (M.validState(parsed)) {
+        if (parsed.profile.email) {
+          parsed.profile.name = M.seed().profile.name;
+          parsed.profile.email = '';
+        }
+        return parsed;
+      }
       storageWarning = 'Saved demo data could not be read. Sample data is shown; your existing stored data has not been overwritten.';
     }
   } catch { storageWarning = 'Browser storage is unavailable. You can explore sample data, but changes cannot be saved.'; }
@@ -118,13 +138,10 @@ function login() {
       <div class="login-feature"><span class="brand-mark">${icon('leaf')}</span><div><strong>A calmer way to manage your money</strong><small>Built for everyday life, one transaction at a time.</small></div></div></div>
       <div class="login-foot">PERSONAL BUDGET MANAGEMENT · MADE FOR YOUR EVERYDAY</div>
     </section>
-    <section class="login-form-wrap"><span class="login-top-note tag">Interactive demo</span><div class="login-form"><span class="eyebrow">Welcome to your fresh start</span><h1>Good to have you here.</h1><p class="subtitle">Sign in to see where your money goes.</p>
-      <div class="demo-note"><strong>A sample workspace, ready to explore</strong>This is a classroom prototype with sample data.<br>Email: <code>demo@budgetwise.test</code><br>Password: <code>Budgetwise123!</code></div>
+    <section class="login-form-wrap"><span class="login-top-note tag">Personal budget</span><div class="login-form"><span class="eyebrow">Welcome to your fresh start</span><h1>Good to have you here.</h1><p class="subtitle">Sign in to see where your money goes.</p>
       <form id="login-form" novalidate><div class="field"><label for="login-email">Email address</label><input id="login-email" name="email" type="email" autocomplete="username" placeholder="you@example.com" required aria-describedby="login-error"></div>
       <div class="field"><label for="login-password">Password</label><div class="password-wrap"><input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required aria-describedby="login-error"><button type="button" class="icon-btn" data-action="toggle-password" aria-label="Show password">${icon('eye')}</button></div></div>
       <p id="login-error" class="error" role="alert"></p><button class="btn full" type="submit">Sign in ${icon('arrow')}</button></form>
-      <div class="divider">or take a look around</div><button class="btn secondary full" data-action="demo-login">Explore the demo ${icon('arrow')}</button>
-      <p class="login-bottom">No account needed. No real bank connections.<br><button type="button" class="btn ghost small" data-action="demo-info">How this demo works</button></p>
     </div></section></main>`;
 }
 function shell(route) {
@@ -132,7 +149,7 @@ function shell(route) {
   const nav = [['dashboard','dashboard','Overview'],['transactions','transactions','Transactions'],['budgets','budgets','Budgets'],['reports','reports','Reports']];
   const initials = state.profile.name.trim().split(/\s+/).map(n => n[0]).slice(0,2).join('').toUpperCase();
   app.innerHTML = `<button class="mobile-overlay" data-action="close-menu" aria-label="Close navigation"></button><aside class="sidebar" id="sidebar" aria-label="Workspace navigation">${brand()}<div class="workspace"><div class="eyebrow">YOUR WORKSPACE</div><strong>Personal budget</strong></div><nav aria-label="Main navigation">${nav.map(([key,ico,name]) => `<a class="nav-link ${route === key ? 'active' : ''}" href="#/${key}" ${route === key ? 'aria-current="page"' : ''}>${icon(ico)}${name}</a>`).join('')}</nav><div class="sidebar-grow"></div><div class="sidebar-note">${icon('leaf')}<strong>Little habits.<br>Brighter tomorrows.</strong><p>Every recorded expense is a small step toward knowing your money better.</p></div><a class="nav-link ${route === 'settings' ? 'active' : ''}" href="#/settings" ${route === 'settings' ? 'aria-current="page"' : ''}>${icon('settings')}Settings</a><button class="nav-link" style="border:0;background:transparent;text-align:left" data-action="logout">${icon('logout')}Sign out</button><a href="#/settings" class="profile-link"><span class="avatar">${esc(initials)}</span><span><strong>${esc(state.profile.name)}</strong><small>Personal workspace</small></span>${icon('chevron')}</a></aside>
-    <div class="content-wrap"><header class="topbar"><div class="inline"><button class="icon-btn menu-btn" data-action="open-menu" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">${icon('menu')}</button><div class="breadcrumb"><span>Workspace</span>${icon('chevron')}<strong>${names[route] || 'Overview'}</strong></div></div><div class="topbar-actions"><span class="tag neutral">${icon('shield')}Demo workspace</span><span class="small muted">UGX</span><span class="header-rule"></span><span class="avatar" aria-label="${esc(state.profile.name)}">${esc(initials)}</span></div></header><main id="main" class="workspace-main" tabindex="-1">${storageWarning ? `<p class="month-empty" role="alert">${esc(storageWarning)}</p>` : ''}<div id="page"></div><footer class="workspace-footer"><span><strong>Made for your everyday.</strong> &nbsp; One good money habit at a time.</span><span>Sample data · Saved in this browser · UGX</span></footer></main></div>`;
+    <div class="content-wrap"><header class="topbar"><div class="inline"><button class="icon-btn menu-btn" data-action="open-menu" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">${icon('menu')}</button><div class="breadcrumb"><span>Workspace</span>${icon('chevron')}<strong>${names[route] || 'Overview'}</strong></div></div><div class="topbar-actions"><span class="tag neutral">${icon('shield')}Personal workspace</span><span class="small muted">UGX</span><span class="header-rule"></span><span class="avatar" aria-label="${esc(state.profile.name)}">${esc(initials)}</span></div></header><main id="main" class="workspace-main" tabindex="-1">${storageWarning ? `<p class="month-empty" role="alert">${esc(storageWarning)}</p>` : ''}<div id="page"></div><footer class="workspace-footer"><span><strong>Made for your everyday.</strong> &nbsp; One good money habit at a time.</span><span>Saved in this browser · UGX</span></footer></main></div>`;
 }
 function monthPicker() { return `<div class="month-picker"><label for="active-month">Budget month</label><input id="active-month" type="month" min="2000-01" max="2100-12" value="${month}"></div>`; }
 function heading(title, description, actions = '') {
@@ -210,7 +227,7 @@ function summary() {
   return `<div class="success-card"><div class="success-icon">${icon('check')}</div><div><h2 class="success-heading">${lastSaved?'All recorded. All up to date.':'Your month, brought together.'}</h2><p>${lastSaved?esc(lastSaved.description)+' · '+ugx(lastSaved.amount)+' · '+pretty(lastSaved.type):monthLabel(month)+' · A clear view of your income and expenses.'}</p></div><a class="btn light" href="#/add">${icon('plus')}Add another</a></div>`+heading('Here’s your updated picture.',`Your totals for ${monthLabel(month)} reflect every saved transaction.`,`<a class="btn secondary" href="#/dashboard">Go to overview ${icon('arrow')}</a>`)+stats(data)+`<div class="dashboard-grid"><section class="panel"><div class="section-head"><div><h2>${lastSaved?'Your latest entry':'Recent transactions'}</h2><p>${lastSaved?'Saved in this browser':'Your latest records for the selected month'}</p></div><a class="text-link" href="#/transactions">View transactions ${icon('arrow')}</a></div>${transactionTable(lastSaved && lastSaved.date.startsWith(month)?[lastSaved]:M.searchTransactions(state.transactions,{month}).slice(0,4))}<div class="status-box"><strong>${total.status==='surplus'?'Your income is ahead of your expenses.':total.status==='deficit'?'Your expenses are ahead of your income.':'Your income and expenses are balanced.'}</strong><p>The remaining balance is income minus expenses. Editing or removing a transaction updates this picture too.</p></div></section><section class="panel">${budgetMini(data)}</section></div>`;
 }
 function settings() {
-  return heading('A workspace that feels like you.','Your preferences, your goals, and a little clarity about this demo.')+`<div class="settings-grid"><section class="panel"><div class="section-head"><div><h2>Your profile & goal</h2><p>These details stay in your browser</p></div></div><form id="settings-form" novalidate><div class="field"><label for="profile-name">Display name</label><input id="profile-name" name="name" value="${esc(state.profile.name)}" maxlength="40" required aria-describedby="settings-error"></div><div class="field"><label for="profile-email">Demo email</label><input id="profile-email" type="email" value="${esc(state.profile.email)}" readonly><small>Sign-in uses the fixed demo credentials. There is no real account.</small></div><div class="field"><label for="savings-goal">Monthly savings goal (UGX)</label><input id="savings-goal" name="goal" type="number" inputmode="numeric" min="0" max="1000000000" step="1" value="${state.profile.savingsGoal}" aria-describedby="settings-error"><small>Use a whole amount. Set 0 if you don’t want a goal.</small></div><p class="error" id="settings-error" role="alert"></p><div class="form-actions"><button class="btn" type="submit">Save preferences ${icon('check')}</button></div></form></section><div class="stack"><section class="panel"><h2>A note about your data</h2><div class="setting-note"><strong class="small">A learning prototype</strong><p>All starting transactions are fictional. Sign-in demonstrates a user journey; it does not provide secure authentication or connect to a bank.</p></div><div class="setting-note"><strong class="small">Saved on this device</strong><p>Changes are saved in this browser’s local storage. They are not synced, encrypted, or backed up by a server. Use sample data here.</p></div><div class="setting-note"><strong class="small">Take a copy with you</strong><p>Download all your transactions as a CSV file.</p><button class="btn secondary" data-action="export-all">${icon('download')}Export all transactions</button></div></section><section class="panel settings-danger"><h2>A fresh starting point</h2><p class="small muted">Restore the original sample records, category limits, and profile. You can undo the reset from the notification.</p><button class="btn secondary" data-action="reset">Restore sample data</button></section></div></div>`;
+  return heading('A workspace that feels like you.','Your preferences and your monthly savings goal.')+`<div class="settings-grid"><section class="panel"><div class="section-head"><div><h2>Your profile & goal</h2><p>These details stay in your browser</p></div></div><form id="settings-form" novalidate><div class="field"><label for="profile-name">Display name</label><input id="profile-name" name="name" value="${esc(state.profile.name)}" maxlength="40" required aria-describedby="settings-error"></div><div class="field"><label for="savings-goal">Monthly savings goal (UGX)</label><input id="savings-goal" name="goal" type="number" inputmode="numeric" min="0" max="1000000000" step="1" value="${state.profile.savingsGoal}" aria-describedby="settings-error"><small>Use a whole amount. Set 0 if you don’t want a goal.</small></div><p class="error" id="settings-error" role="alert"></p><div class="form-actions"><button class="btn" type="submit">Save preferences ${icon('check')}</button></div></form></section><div class="stack"><section class="panel"><h2>A note about your data</h2><div class="setting-note"><strong class="small">Saved on this device</strong><p>Your transactions and preferences are saved in this browser. Export a CSV to keep a copy of your records.</p></div><div class="setting-note"><strong class="small">Take a copy with you</strong><p>Download all your transactions as a CSV file.</p><button class="btn secondary" data-action="export-all">${icon('download')}Export all transactions</button></div></section><section class="panel settings-danger"><h2>A fresh starting point</h2><p class="small muted">Restore the original sample records, category limits, and profile. You can undo the reset from the notification.</p><button class="btn secondary" data-action="reset">Restore sample data</button></section></div></div>`;
 }
 function render() {
   if (dialog.open) dialog.close();
@@ -244,7 +261,7 @@ function exportCsv(data,filename) {
   setTimeout(()=>URL.revokeObjectURL(url),1000);
   showToast('Your CSV download is ready.');
 }
-document.addEventListener('submit',event=>{
+document.addEventListener('submit',async event=>{
   const form=event.target;
   if (!['login-form','transaction-form','budget-form','settings-form'].includes(form.id)) return;
   event.preventDefault();
@@ -253,7 +270,13 @@ document.addEventListener('submit',event=>{
     let message='';
     if (!email || !password) message='Enter both your email address and password.';
     else if (!form.email.validity.valid) message='Enter a valid email address.';
-    else if (email!=='demo@budgetwise.test' || password!=='Budgetwise123!') message='Use the demo email and password shown above, or choose Explore the demo.';
+    else {
+      const button=form.querySelector('button[type="submit"]');
+      button.disabled=true;
+      try { if (!await matchesLogin(email,password)) message='Email or password is incorrect.'; }
+      catch { message='Sign-in is unavailable. Open the application using HTTPS or localhost.'; }
+      finally { button.disabled=false; }
+    }
     if(message){document.querySelector('#login-error').textContent=message;form.email.setAttribute('aria-invalid','true');form.password.setAttribute('aria-invalid','true');return;}
     setSession(true);navigate('dashboard');return;
   }
@@ -294,10 +317,8 @@ document.addEventListener('click',event=>{
   const control=event.target.closest('[data-action]');
   if(!control) return;
   const action=control.dataset.action;
-  if(action==='demo-login'){setSession(true);navigate('dashboard');}
   if(action==='logout'){setSession(false);toastBox.hidden=true;location.hash='#/login';render();}
   if(action==='toggle-password'){const input=document.querySelector('#login-password');input.type=input.type==='password'?'text':'password';control.setAttribute('aria-label',input.type==='password'?'Show password':'Hide password');}
-  if(action==='demo-info')openDialog(`<div class="between"><h2 id="dialog-title">A demo, with room to explore</h2><button class="icon-btn" data-action="close-dialog" aria-label="Close dialog">${icon('close')}</button></div><p>Use the sample credentials or choose “Explore the demo.” Both open the same fictional workspace.</p><p>There is no account registration, password recovery, secure authentication, or bank connection. The password is a public demo value. Use sample information only.</p><button class="btn full" data-action="close-dialog">Got it</button>`);
   if(action==='close-dialog')dialog.close();
   if(action==='open-menu' || action==='close-menu'){
     const open=action==='open-menu';document.querySelector('.sidebar').classList.toggle('open',open);document.querySelector('.mobile-overlay').classList.toggle('visible',open);document.querySelector('[data-action="open-menu"]').setAttribute('aria-expanded',String(open));

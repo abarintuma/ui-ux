@@ -1,55 +1,44 @@
-# Basic user research
+# User Research
 
-## Purpose
+**Project:** Budgetwise  
+**Student:** Ainemukama Alfred
 
-Understand who could use a personal budget app and what they need to record income and expenses easily.
+## Aim
 
-## Method used
+The aim is to understand the needs of people who want to keep track of their income and daily expenses. The research focuses on the tasks a person needs to complete when managing a monthly budget.
 
-This is basic desk research: review of the supplied assignment, inspection of the existing Budgetwise code and Figma screen structure, and a walkthrough of the deployed website on 31 October 2026. This identifies design needs and implementation behaviour. It does not measure real users' opinions. No interviews, surveys or participant usability sessions are claimed.
+## Approach
+
+The research uses task analysis: identifying common money-management activities, grouping the information needed for each activity, and checking the steps in the interface. The main tasks are recording income, recording expenses and checking the remaining balance.
 
 ## Intended users
 
-| User group | Typical task | Design need |
+| User group | Budgeting task | Interface need |
 | --- | --- | --- |
-| Students | Track allowances, meals and transport | Quick entries and clear UGX amounts |
-| Salaried workers | Compare salary with monthly bills | Income, expenses and balance together |
-| People with irregular income | Record payments as they arrive | Support several income entries each month |
+| Students | Track allowances, meals and transport | Quick entry and clear amounts |
+| Salaried workers | Plan monthly bills and everyday spending | Monthly totals and category budgets |
+| People with irregular income | Record payments received at different times | Several income entries within one month |
 
-These are proposed user groups, inferred from the assignment. They have not been confirmed through interviews.
+## Needs identified
 
-## Findings from the materials
+The task analysis identified five main needs:
 
-| Evidence reviewed | Finding | Design response |
-| --- | --- | --- |
-| Assignment question | Users must record both income and expenses | Provide an income/expense switch |
-| Required journey | Saving should lead to an updated summary | Show a saved message and recalculated totals |
-| Mobile Figma frames | The design is intended for phone screens | Use readable fields and scrolling content |
-| Live transaction walkthrough | Missing information can prevent a correct entry | Display field errors before saving |
-| Code and reload check | Records stay in the same browser | Explain local storage clearly |
+1. Users need to see income, expenses and balance together.
+2. Adding an entry should require only a few clear fields.
+3. Income and expenses should be easy to distinguish.
+4. Missing or incorrect information should be explained before saving.
+5. Users need to see the effect of an entry after it is saved.
 
-## Assumptions to check with users
+These needs led to the summary cards, income/expense switch, labelled form fields, validation messages and updated summary screen.
 
-- Small everyday expenses may be forgotten.
-- Users may prefer entering an expense quickly on a phone.
-- A visible remaining balance may be easier to understand than a long list of records.
+## Example user scenario
 
-## Example persona
+Alfred receives money for the month and records it as income. After spending 15,000 UGX on transport, he adds an expense, selects the Transport category and saves it. He then checks the summary to see how much money remains.
 
-**Aine** is an illustrative student, not a real research participant. Aine receives an allowance and spends on meals, transport and learning materials. The goal is to know how much is left each month. A short form and a clear balance help with this task.
+## Questions for user feedback
 
-## Short interview guide
-
-Ask three willing classmates or other intended users. Explain that it is coursework, participation is optional, and exact financial amounts or account details are not needed.
-
-1. How do you currently keep track of spending?
-2. What is difficult about that method?
-3. What information would you want to see first in a budget app?
-4. Would you usually use a phone or computer?
-5. After trying the demo, was anything difficult to find or understand?
-
-Record each participant as P1, P2 or P3. Note the date, user group, answer summary, difficulty observed and suggested improvement. Leave results unfilled until the conversation happens. Do not invent quotations or percentages.
-
-## Simple usability task
-
-Ask the participant to open the demo, find the October balance, add a 15,000 UGX transport expense and explain the new balance. Record whether they finish without help, where they hesitate and one improvement they suggest. No participant results are available yet.
+- How do you currently record your spending?
+- What information would you want to see first?
+- Is the Add transaction button easy to find?
+- Are the form labels and error messages clear?
+- Can you explain the balance shown after saving an expense?

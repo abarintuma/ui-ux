@@ -1,21 +1,27 @@
-# Working website screenshots
+# Mobile Interface Screenshots
 
-Captured from https://ui-ux-ivory.vercel.app/ on 31 October 2026 using fictional sample records in a separate browser workspace. These are desktop implementation screenshots; the Figma designs are mobile.
+The screenshots show Budgetwise at a phone width of 390 pixels. Longer screens show the full page so that the form and summary details can be read.
 
 ## Login
 
-![Login](01-login.jpg)
+![Mobile login screen](01-login.png)
+
+The user enters an email address and password. Labels remain visible above the fields, and errors appear below the form.
 
 ## Budget dashboard
 
-![Dashboard before adding the expense](02-dashboard.jpg)
+![Mobile budget dashboard](02-dashboard.png)
+
+The dashboard shows the selected month, income, expenses and remaining balance. The Add transaction button opens the entry form.
 
 ## Add transaction
 
-![A sample transport expense with live preview](03-add-transaction.jpg)
+![Mobile transaction form](03-add-transaction.png)
+
+The user selects income or expense and enters the description, amount, date and category. A preview shows the effect on the balance.
 
 ## Updated summary
 
-![Saved expense and updated totals](04-updated-summary.jpg)
+![Mobile updated summary](04-updated-summary.png)
 
-The dashboard starts with UGX 1,850,000 income, UGX 982,000 expenses and UGX 868,000 balance. The new expense is UGX 15,000 on 24 October 2026. After saving, expenses are UGX 997,000 and balance is UGX 853,000.
+After a 15,000 UGX transport expense is saved, total expenses become 997,000 UGX and the balance becomes 853,000 UGX.
